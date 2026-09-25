@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so secret scanning can check past commits, not just this diff
+
+      # Fails loudly and explains why, instead of a silent `npm install` fallback: `npm install`
+      # would "work" but installs whatever the registry resolves *today*, hides dependency drift,
+      # and defeats the point of a committed lockfile. This repo has no package-lock.json yet — this
+      # step is expected to fail until one is generated locally (`npm install`) and committed.
+      - name: Verify package-lock.json exists
+        run: |
+          if [ ! -f package-lock.json ]; then
+            echo "::error::package-lock.json is missing from the repository root. 'npm ci' requires a committed lockfile for a reproducible, auditable install. Run 'npm install' locally, commit the resulting package-lock.json, and re-run this workflow. This job intentionally fails rather than falling back to 'npm install' in CI."
+            exit 1
+          fi
+          echo "package-lock.json found."
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies (exact lockfile)
+        run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+        env:
+          # Placeholder values ONLY so build-time validation (src/lib/env.ts) and static generation
+          # succeed in CI. Real secrets live in Vercel project settings, never in this workflow.
+          SUPABASE_URL: 'https://placeholder.supabase.co'
+          SUPABASE_ANON_KEY: 'placeholder-anon-key-placeholder-anon-key'
+          SUPABASE_SERVICE_ROLE_KEY: 'placeholder-service-role-key-placeholder'
+          APP_ORIGIN: 'https://placeholder.example.com'
+          AUDIT_IP_HASH_SALT: 'placeholder-placeholder-placeholder-placeholder'
+          R2_ACCOUNT_ID: 'placeholder'
+          R2_ACCESS_KEY_ID: 'placeholder'
+          R2_SECRET_ACCESS_KEY: 'placeholder'
+          R2_BUCKET: 'placeholder'
+
+      - name: Dependency vulnerability audit (high/critical)
+        run: npm audit --audit-level=high
+
+  worker-build-and-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+
+      # Same reasoning as the root job's check: fail clearly rather than silently installing
+      # unpinned versions. worker/package-lock.json does not exist yet either.
+      - name: Verify worker/package-lock.json exists
+        run: |
+          if [ ! -f package-lock.json ]; then
+            echo "::error::worker/package-lock.json is missing. 'npm ci' requires a committed lockfile. Run 'npm install' inside worker/ locally, commit the resulting worker/package-lock.json, and re-run this workflow. This job intentionally fails rather than falling back to 'npm install' in CI."
+            exit 1
+          fi
+          echo "worker/package-lock.json found."
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: worker/package-lock.json
+
+      - name: Install worker dependencies (exact lockfile)
+        run: npm ci
+
+      - name: Worker unit tests
+        run: npm test
+
+      # No worker lint step: worker/package.json has no "lint" script (no ESLint config exists for
+      # the worker) — only test/typecheck/build are real scripts there.
+
+      - name: Worker type check
+        run: npm run typecheck
+
+      - name: Worker build
+        run: npm run build
+
+      - name: Worker dependency vulnerability audit (high/critical)
+        run: npm audit --audit-level=high
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan for committed secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
