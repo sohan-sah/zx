@@ -1,0 +1,330 @@
+/*
+  Design tokens
+  -------------
+  Subject: a private, single-admin Spanish-language video library — closer to a personal screening
+  room than a consumer streaming app. Palette leans toward film/theatre warmth (marquee gold on deep
+  near-black-blue) rather than a generic SaaS light theme. Headings use a system serif (no webfont
+  fetch — keeps the CSP's font-src 'self' honest and avoids a render-blocking network request) for a
+  bit of "programme note" character; body text uses the system sans stack for maximum legibility of
+  Spanish diacritics across platforms.
+*/
+:root {
+  --color-bg: #12141a;
+  --color-surface: #1b1f29;
+  --color-surface-raised: #232838;
+  --color-text: #eae7e0;
+  --color-text-muted: #a7acb9;
+  --color-accent: #e3a857;
+  --color-accent-text: #12141a;
+  --color-border: #2c3140;
+  --color-danger: #c1554d;
+  --color-focus: #7fb2e0;
+
+  --font-display: ui-serif, 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2.5rem;
+
+  --radius: 3px;
+  --max-line: 68ch;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 0 0 var(--space-2);
+}
+
+h1 {
+  font-size: clamp(1.6rem, 4vw + 1rem, 2.4rem);
+}
+
+p {
+  margin: 0 0 var(--space-2);
+  max-width: var(--max-line);
+}
+
+a {
+  color: var(--color-accent);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Layout shell: mobile-first, single column; widens only past tablet width. */
+.shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-2);
+}
+
+@media (min-width: 640px) {
+  .shell {
+    padding: var(--space-3) var(--space-4);
+  }
+}
+
+.site-header {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+}
+
+.site-nav__brand {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--color-text);
+  text-decoration: none;
+  margin-right: auto;
+}
+
+.site-nav__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.site-nav__links a,
+.site-nav__links button {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.site-nav__links a:hover,
+.site-nav__links a[aria-current='page'],
+.site-nav__links button:hover {
+  color: var(--color-accent);
+}
+
+/* Forms */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 28rem;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+input[type='email'],
+input[type='password'],
+input[type='text'],
+textarea,
+select {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  padding: 0.65rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+input[type='file'] {
+  color: var(--color-text-muted);
+}
+
+progress {
+  width: 100%;
+  height: 0.6rem;
+  accent-color: var(--color-accent);
+}
+
+button,
+.button {
+  display: inline-block;
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.65rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button.button--secondary {
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+button.button--danger {
+  background: var(--color-danger);
+  color: var(--color-text);
+}
+
+[role='alert'] {
+  color: var(--color-danger);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Video grid */
+.video-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 560px) {
+  .video-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .video-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.video-card {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-2);
+}
+
+.video-card__title {
+  display: block;
+  color: var(--color-text);
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.video-card__title:hover {
+  color: var(--color-accent);
+}
+
+.video-card__meta {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.empty-state {
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.player-placeholder {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-4) var(--space-2);
+  text-align: center;
+  color: var(--color-text-muted);
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+video.player {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: var(--radius);
+}
+
+.mfa-qr {
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+}
+
+.badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem var(--space-2);
+  margin: 0 0 var(--space-2);
+}
+
+dt {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+dd {
+  margin: 0;
+  font-size: 0.9rem;
+  word-break: break-all;
+}
+
+section {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-2);
+  margin-top: var(--space-3);
+}
